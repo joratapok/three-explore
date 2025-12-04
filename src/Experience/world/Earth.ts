@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import GUI from 'lil-gui';
+import { Lensflare, LensflareElement } from 'three/addons/objects/Lensflare.js';
 import earthVertexShader from './shaders/earth/vertex.glsl'
 import earthFragmentShader from './shaders/earth/fragment.glsl'
 import atmosphereVertexShader from './shaders/atmosphere/vertex.glsl'
@@ -22,6 +23,7 @@ export class Earth {
   private atmosphere!: THREE.Mesh;
   private sunSpherical!: THREE.Spherical;
   private sunDirection!: THREE.Vector3;
+  private sunMaterial!: THREE.MeshBasicMaterial;
   debugSun!: THREE.Mesh;
   debugFolder?: GUI;
 
@@ -36,6 +38,7 @@ export class Earth {
     this.createMesh();
     this.createAtmosphere();
     this.createSun();
+    this.addLensFlare();
   }
 
   createGeometry() {
@@ -93,12 +96,16 @@ export class Earth {
   createSun() {
     this.sunSpherical = new THREE.Spherical(1, Math.PI * 0.5, 0.5);
     this.sunDirection = new THREE.Vector3();
+    this.sunMaterial = new THREE.MeshBasicMaterial();
+    this.sunMaterial.depthWrite = false;
+
 
     // Debug
     this.debugSun = new THREE.Mesh(
       new THREE.IcosahedronGeometry(0.1, 2),
-        new THREE.MeshBasicMaterial()
+        this.sunMaterial
     );
+    this.debugSun.renderOrder = 0;
     this.scene.add(this.debugSun);
 
     // Update
@@ -125,6 +132,22 @@ export class Earth {
         .max(Math.PI)
         .onChange(updateSun);
     }
+  }
+
+  addLensFlare() {
+    const light = new THREE.PointLight( 0xffffff, 1.5, 2000, 0 );
+    light.position.copy(this.sunDirection).multiplyScalar(5);
+    this.scene.add(light);
+
+    const lensflareTexture0 = this.resources.items['lensflare0'];
+    const lensflareTexture1 = this.resources.items['lensflare1'];
+    const lensflare = new Lensflare();
+    lensflare.addElement(new LensflareElement(lensflareTexture0, 300, 0, light.color ));
+    lensflare.addElement(new LensflareElement(lensflareTexture1, 60, 0.6 ));
+    lensflare.addElement(new LensflareElement(lensflareTexture1, 70, 0.7 ));
+    lensflare.addElement(new LensflareElement(lensflareTexture1, 120, 0.9 ));
+    lensflare.addElement(new LensflareElement(lensflareTexture1, 70, 1 ));
+    light.add(lensflare);
   }
 
   update() {

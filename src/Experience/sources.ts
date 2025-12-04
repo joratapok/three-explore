@@ -20,4 +20,14 @@ export const sources: ISourceTypes[] = [
     type: 'texture',
     path: 'earth/specularClouds.jpg',
   },
+  {
+    name: 'lensflare0',
+    type: 'texture',
+    path: 'lenses/lensflare0.png',
+  },
+  {
+    name: 'lensflare1',
+    type: 'texture',
+    path: 'lenses/lensflare1.png',
+  },
 ];
